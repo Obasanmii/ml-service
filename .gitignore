@@ -5,3 +5,6 @@ __pycache__/
 models*.joblib
 models*.csv
 .DS_Store
+*.ipynb
+*.ipynb
+.ipynb_checkpoints/
