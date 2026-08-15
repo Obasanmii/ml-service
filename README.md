@@ -35,3 +35,14 @@ Then open http://localhost:8000/docs to try the API.
 ```bash
 pytest -v
 ```
+
+## Observability
+
+The service instruments every request and exposes operational metrics:
+
+- Each response carries an `X-Process-Time-Ms` header reporting how long the request took.
+- `GET /metrics` returns live JSON: total request count, server error count, and
+  p50/p95/p99 latency computed over a rolling window of recent requests.
+
+Latency is tracked with percentiles rather than a simple average, since the tail
+(p95/p99) is what reflects the slowest requests users actually experience.
