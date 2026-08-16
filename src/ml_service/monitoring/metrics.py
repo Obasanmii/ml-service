@@ -1,45 +1,16 @@
 from __future__ import annotations
 
-from collections import deque
-from threading import Lock
+from prometheus_client import Counter, Histogram
 
-import numpy as np
+REQUEST_COUNT = Counter(
+    "http_requests_total",
+    "Total HTTP requests.",
+    ["method", "endpoint", "status"],
+)
 
-
-class Metrics:
-    def __init__(self, window: int = 1000) -> None:
-        self._latencies_ms: deque[float] = deque(maxlen=window)
-        self._total = 0
-        self._server_errors = 0
-        self._lock = Lock()
-
-    def record(self, duration_ms: float, status_code: int) -> None:
-        with self._lock:
-            self._latencies_ms.append(duration_ms)
-            self._total += 1
-            if status_code >= 500:
-                self._server_errors += 1
-
-    def snapshot(self) -> dict:
-        with self._lock:
-            latencies = list(self._latencies_ms)
-            total = self._total
-            errors = self._server_errors
-        if latencies:
-            arr = np.array(latencies)
-            latency = {
-                "p50_ms": round(float(np.percentile(arr, 50)), 2),
-                "p95_ms": round(float(np.percentile(arr, 95)), 2),
-                "p99_ms": round(float(np.percentile(arr, 99)), 2),
-            }
-        else:
-            latency = {"p50_ms": 0.0, "p95_ms": 0.0, "p99_ms": 0.0}
-        return {
-            "total_requests": total,
-            "server_errors": errors,
-            "window_size": len(latencies),
-            "latency_ms": latency,
-        }
-
-
-metrics = Metrics()
+REQUEST_LATENCY = Histogram(
+    "http_request_duration_seconds",
+    "HTTP request latency in seconds.",
+    ["method", "endpoint"],
+    buckets=(0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0),
+)
