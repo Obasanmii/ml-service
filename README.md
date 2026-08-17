@@ -46,3 +46,14 @@ The service instruments every request and exposes operational metrics:
 
 Latency is tracked with percentiles rather than a simple average, since the tail
 (p95/p99) is what reflects the slowest requests users actually experience.
+## Running the full stack 
+The service and a Prometheus server that scrapes its metrics run together via Docker Compose: 
+
+```bash
+docker compose up --build 
+```
+
+- API: http://localhost:8000 (docs at /docs, metrics at /metrics) 
+- Prometheus: http://localhost:9090 (try a query like http_requests_total) 
+
+CI builds and launches this whole stack on every push and verifies both services come up, so the Compose setup is tested. 
